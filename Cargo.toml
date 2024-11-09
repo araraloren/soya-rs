@@ -1,0 +1,7 @@
+[workspace]
+
+members = ["soya"]
+resolver = "2"
+
+[workspace.dependencies]
+soya = { path = "soya", version = "0.0.1" }
