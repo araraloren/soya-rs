@@ -10,7 +10,7 @@ description = "TODO"
 repository = "https://github.com/araraloren/soya-rs/"
 keywords = ["getopt", "cli"]
 categories = ["command-line-interface"]
-readme = "README.md"
+readme = "../README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
