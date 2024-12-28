@@ -1,0 +1,8 @@
+[package]
+name = "test1"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+soya.workspace = true
+color-eyre.workspace = true
