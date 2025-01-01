@@ -1,6 +1,7 @@
 use soya::err;
 use soya::prelude::*;
 use soya::Error;
+use soya::Infer;
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
@@ -21,7 +22,7 @@ fn main() -> color_eyre::Result<()> {
     parser
         .add_opt("--opt=bool")?
         .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<bool>();
+            let val = ctx.value::<<bool as Infer>::Val>();
 
             if let Some(field_0) = field_0.as_mut() {
                 <bool as Field>::set_value(field_0, val)?;
@@ -34,7 +35,7 @@ fn main() -> color_eyre::Result<()> {
     parser
         .add_opt("--cnt=int")?
         .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<i64>();
+            let val = ctx.value::<<Option<i64> as Infer>::Val>();
 
             if let Some(field_1) = field_1.as_mut() {
                 <Option<i64> as Field>::set_value(field_1, val)?;
@@ -47,7 +48,7 @@ fn main() -> color_eyre::Result<()> {
     parser
         .add_opt("--win=string")?
         .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<String>();
+            let val = ctx.value::<<String as Infer>::Val>();
 
             if let Some(field_2) = field_2.as_mut() {
                 <String as Field>::set_value(field_2, val)?;
@@ -60,7 +61,7 @@ fn main() -> color_eyre::Result<()> {
     parser
         .add_opt("--res=uint")?
         .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<u64>();
+            let val = ctx.value::<<Result<u64, Error> as Infer>::Val>();
 
             if let Some(field_3) = field_3.as_mut() {
                 <Result<u64, Error> as Field>::set_value(field_3, val)?;
