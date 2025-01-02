@@ -13,7 +13,7 @@ use crate::value::Value;
 
 pub mod alter;
 pub mod arg;
-pub mod cote;
+pub mod soya;
 pub mod fetch;
 pub mod infer;
 pub mod sub;
@@ -21,7 +21,7 @@ pub mod value;
 
 pub use self::alter::AlterKind;
 pub use self::arg::ArgKind;
-pub use self::cote::CoteKind;
+pub use self::soya::CoteKind;
 pub use self::fetch::FetchKind;
 pub use self::infer::InferKind;
 pub use self::sub::SubKind;

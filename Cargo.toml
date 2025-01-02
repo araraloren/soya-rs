@@ -1,10 +1,11 @@
 [workspace]
 
-members = ["soya", "soya-derive", "test1"]
+members = ["soya", "soya-derive", "test1", "test2"]
 resolver = "2"
 
 [workspace.dependencies]
 soya = { path = "soya", version = "0.0.1" }
+soya-derive = { path = "soya-derive", version = "0.1.0" }
 aopt = { version = "0.16" }
 tracing = "0.1"
 color-eyre = { version = "0.6" }

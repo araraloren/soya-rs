@@ -1,0 +1,9 @@
+[package]
+name = "test2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+soya.workspace = true
+soya-derive.workspace = true
+color-eyre.workspace = true
