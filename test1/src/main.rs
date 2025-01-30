@@ -17,7 +17,7 @@ fn main() -> color_eyre::Result<()> {
     let mut field_1 = <Option<i64> as Field>::new_value();
     let mut field_2 = <String as Field>::new_value();
     let mut field_3 = <Result<u64, Error> as Field>::new_value();
-    let mut parser = FwdParser::default();
+    let mut parser = OptSet::default();
 
     parser
         .add_opt("--opt=bool")?
@@ -71,7 +71,9 @@ fn main() -> color_eyre::Result<()> {
             Ok(Some(()))
         })?
         .then(NullStore);
-    parser.parse(Args::from_env())?.ok()?;
+    parser
+        .parse_policy(Args::from_env(), &mut FwdPolicy::default())?
+        .ok()?;
 
     dbg!(&parser);
     drop(parser);

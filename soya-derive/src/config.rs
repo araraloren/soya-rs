@@ -11,23 +11,11 @@ use syn::Token;
 use crate::error;
 use crate::value::Value;
 
-pub mod alter;
 pub mod arg;
 pub mod soya;
-pub mod fetch;
-pub mod infer;
 pub mod sub;
-pub mod value;
 
-pub use self::alter::AlterKind;
-pub use self::arg::ArgKind;
-pub use self::soya::CoteKind;
-pub use self::fetch::FetchKind;
-pub use self::infer::InferKind;
-pub use self::sub::SubKind;
-pub use self::value::ValueKind;
-
-pub trait Kind
+pub trait ArgParser
 where
     Self: Sized,
 {
@@ -51,7 +39,7 @@ impl<T> Config<T> {
     }
 }
 
-impl<T: Kind> Parse for Config<T> {
+impl<T: ArgParser> Parse for Config<T> {
     fn parse(mut input: ParseStream) -> syn::Result<Self> {
         let (kind, has_value) = T::parse(&mut input)?;
 
@@ -104,7 +92,7 @@ where
     }
 }
 
-impl<T: Kind> Configs<T> {
+impl<T: ArgParser> Configs<T> {
     pub fn parse_attrs(name: &str, attrs: &[Attribute]) -> Self {
         let attrs = attrs.iter().filter(|v| v.path().is_ident(name));
         let cfgs = attrs.map(|attr| {

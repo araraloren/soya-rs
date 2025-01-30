@@ -2,6 +2,7 @@ mod config;
 mod gen;
 mod value;
 
+use gen::SoyaGenerator;
 use quote::quote;
 use syn::parse_macro_input;
 use syn::spanned::Spanned;
@@ -16,5 +17,16 @@ fn error(spanned: impl Spanned, msg: impl Into<String>) -> syn::Error {
 pub fn parser(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: DeriveInput = parse_macro_input!(input);
 
-    quote! {}.into()
+    let generator = |input: DeriveInput| -> syn::Result<proc_macro2::TokenStream> {
+        let mut cg = SoyaGenerator::new(&input)?;
+
+        cg.generate_impl()
+    };
+
+    let ts = generator(input).unwrap_or_else(syn::Error::into_compile_error);
+
+    quote! {
+        #ts
+    }
+    .into()
 }
