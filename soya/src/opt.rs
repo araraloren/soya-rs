@@ -1,8 +1,9 @@
 use std::any::TypeId;
 use std::ffi::OsStr;
 
-use crate::err;
-use crate::Error;
+use crate::err::err;
+use crate::err::Error;
+
 use aopt::ctx::Ctx;
 use aopt::opt::Action;
 use aopt::opt::ConfigValue;
@@ -302,6 +303,84 @@ impl aopt::opt::Opt for Opt {
 
     fn init(&mut self) -> Result<(), aopt::Error> {
         self.accessor.initialize()
+    }
+
+    fn set_name(&mut self, name: impl Into<String>) -> &mut Self {
+        self.name = name.into();
+        self
+    }
+
+    fn set_type(&mut self, r#type: TypeId) -> &mut Self {
+        self.r#type = r#type;
+        self
+    }
+
+    fn set_value(&mut self, value: ValAccessor) -> &mut Self {
+        self.accessor = value;
+        self
+    }
+
+    fn set_hint(&mut self, hint: impl Into<String>) -> &mut Self {
+        self.help.set_hint(hint);
+        self
+    }
+
+    fn set_help(&mut self, help: impl Into<String>) -> &mut Self {
+        self.help.set_help(help);
+        self
+    }
+
+    fn set_action(&mut self, action: Action) -> &mut Self {
+        self.action = action;
+        self
+    }
+
+    fn set_style(&mut self, styles: Vec<Style>) -> &mut Self {
+        self.styles = styles;
+        self
+    }
+
+    fn set_index(&mut self, index: Option<Index>) -> &mut Self {
+        self.index = index;
+        self
+    }
+
+    fn set_force(&mut self, force: bool) -> &mut Self {
+        self.force = force;
+        self
+    }
+
+    fn add_alias(&mut self, name: impl Into<String>) -> &mut Self {
+        if let Some(alias) = &mut self.alias {
+            alias.push(name.into());
+        }
+
+        self
+    }
+
+    fn rem_alias(&mut self, name: &str) -> &mut Self {
+        if let Some(alias) = &mut self.alias {
+            if let Some((i, _)) = alias.iter().enumerate().find(|(_, v)| v == &name) {
+                alias.remove(i);
+            }
+        }
+
+        self
+    }
+
+    fn set_ignore_name(&mut self, ignore_name: bool) -> &mut Self {
+        self.ignore_name = ignore_name;
+        self
+    }
+
+    fn set_ignore_alias(&mut self, ignore_alias: bool) -> &mut Self {
+        self.ignore_alias = ignore_alias;
+        self
+    }
+
+    fn set_ignore_index(&mut self, ignore_index: bool) -> &mut Self {
+        self.ignore_index = ignore_index;
+        self
     }
 }
 

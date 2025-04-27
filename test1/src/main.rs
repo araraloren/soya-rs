@@ -1,91 +1,158 @@
-use soya::err;
+use soya::aopt::opt::ConfigBuildInfer;
+use soya::aopt::opt::ConfigValue;
+use soya::aopt::set::Ctor;
+use soya::aopt::set::Set;
+use soya::aopt::set::SetExt;
+use soya::err::err;
+use soya::err::Error;
 use soya::prelude::*;
-use soya::Error;
-use soya::Infer;
+
+#[derive(Debug)]
+pub struct Git {
+    // --debug
+    debug: bool,
+
+    // --cfg name=value
+    cfg: Option<Vec<String>>,
+
+    // clone
+    clone: Option<Clone>,
+
+    add: Option<Add>,
+}
+
+#[derive(Debug)]
+pub struct Clone {
+    // --depth u64
+    depth: Option<u64>,
+
+    // <repo>
+    repo: String,
+
+    // [dir]
+    dir: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct Add {
+    // <files>...
+    files: Vec<String>,
+}
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
-    #[derive(Debug)]
-    pub struct Cli {
-        a: bool,
-        b: Option<i64>,
-        c: String,
-        d: Result<u64, Error>,
-    }
-    let mut field_0 = <bool as Field>::new_value();
-    let mut field_1 = <Option<i64> as Field>::new_value();
-    let mut field_2 = <String as Field>::new_value();
-    let mut field_3 = <Result<u64, Error> as Field>::new_value();
-    let mut parser = OptSet::default();
+    let mut values = Add::parse_env()?;
 
-    parser
-        .add_opt("--opt=bool")?
-        .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<<bool as Infer>::Val>();
-
-            if let Some(field_0) = field_0.as_mut() {
-                <bool as Field>::set_value(field_0, val)?;
-            } else {
-                field_0 = Some(<bool as Field>::map_value(val)?);
-            }
-            Ok(Some(()))
-        })?
-        .then(NullStore);
-    parser
-        .add_opt("--cnt=int")?
-        .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<<Option<i64> as Infer>::Val>();
-
-            if let Some(field_1) = field_1.as_mut() {
-                <Option<i64> as Field>::set_value(field_1, val)?;
-            } else {
-                field_1 = Some(<Option<i64> as Field>::map_value(val)?);
-            }
-            Ok(Some(()))
-        })?
-        .then(NullStore);
-    parser
-        .add_opt("--win=string")?
-        .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<<String as Infer>::Val>();
-
-            if let Some(field_2) = field_2.as_mut() {
-                <String as Field>::set_value(field_2, val)?;
-            } else {
-                field_2 = Some(<String as Field>::map_value(val)?);
-            }
-            Ok(Some(()))
-        })?
-        .then(NullStore);
-    parser
-        .add_opt("--res=uint")?
-        .on(|_: &mut Set, _: &mut Ser, ctx: &Ctx| {
-            let val = ctx.value::<<Result<u64, Error> as Infer>::Val>();
-
-            if let Some(field_3) = field_3.as_mut() {
-                <Result<u64, Error> as Field>::set_value(field_3, val)?;
-            } else {
-                field_3 = Some(<Result<u64, Error> as Field>::map_value(val)?);
-            }
-            Ok(Some(()))
-        })?
-        .then(NullStore);
-    parser
-        .parse_policy(Args::from_env(), &mut FwdPolicy::default())?
-        .ok()?;
-
-    dbg!(&parser);
-    drop(parser);
-
-    let cli = Cli {
-        a: field_0.ok_or_else(|| err!("--opt is force required"))?,
-        b: field_1.ok_or_else(|| err!("--cnt is force required"))?,
-        c: field_2.ok_or_else(|| err!("--win is force required"))?,
-        d: field_3.ok_or_else(|| err!("--res is force required"))?,
-    };
-
-    dbg!(cli);
+    dbg!(values);
 
     Ok(())
+}
+
+impl<'inv> ParserImpl<'inv> for Add {
+    type Error = Error;
+
+    type Parser<'a>
+        = OptSet<'a>
+    where
+        Self: 'a;
+
+    type Policy<'a>
+        = FwdPolicy<'a>
+    where
+        Self: 'a;
+
+    fn update(parser: &mut Self::Parser<'inv>) -> Result<(), Self::Error> {
+        let ctor_default = ctor_default_name();
+        let option_0 = {
+            let cfg = {
+                let mut cfg = SetCfg::<Self::Parser<'inv>>::default();
+
+                cfg.set_name("files");
+                cfg.set_index(Index::range(Some(1), None));
+                <Pos<Vec<String>> as Infer>::infer_fill_info(&mut cfg)?;
+                cfg
+            };
+
+            parser.ctor_mut(&ctor_default)?.new_with(cfg)?
+        };
+        let option_1 = {
+            let cfg = {
+                let mut cfg = SetCfg::<Self::Parser<'inv>>::default();
+
+                cfg.set_name("-h");
+                cfg.add_alias("--help");
+                <bool as Infer>::infer_fill_info(&mut cfg)?;
+                cfg
+            };
+
+            parser.ctor_mut(&ctor_default)?.new_with(cfg)?
+        };
+
+        parser.insert(option_0);
+        parser.insert(option_1);
+
+        Ok(())
+    }
+
+    fn apply_settings(policy: &mut Self::Policy<'inv>) -> Result<(), Self::Error> {
+        Ok(())
+    }
+
+    fn parse(args: Args) -> Result<Self, Self::Error>
+    where
+        Self: 'inv + Sized,
+    {
+        let mut value_0 = <Pos<Vec<String>> as FieldVal>::new();
+        let mut value_help = <bool as FieldVal>::new();
+        let mut parser = <Self as ParserImpl<'_>>::into_parser()?;
+        let mut policy = <Self as ParserImpl<'_>>::into_policy()?;
+
+        parser
+            .entry(0)?
+            .on(|set, ctx| {
+                let val = ctx.value::<<Pos<Vec<String>> as Infer>::Val>();
+
+                if let Some(value_0) = value_0.as_mut() {
+                    <Pos<Vec<String>> as FieldVal>::update(value_0, val)?;
+                } else {
+                    value_0 = Some(<Pos<Vec<String>> as FieldVal>::map(val)?);
+                }
+                Ok(Some(()))
+            })
+            .then(NullStore);
+        parser
+            .entry(1)?
+            .on(|set, ctx| {
+                let val = ctx.value::<<bool as Infer>::Val>();
+
+                if let Some(value_help) = value_help.as_mut() {
+                    <bool as FieldVal>::update(value_help, val)?;
+                } else {
+                    value_help = Some(<bool as FieldVal>::map(val)?);
+                }
+                Ok(Some(()))
+            })
+            .then(NullStore);
+
+        let mut ret = parser.parse_policy(args, &mut policy)?;
+
+        drop(parser);
+        drop(policy);
+
+        if value_help == Some(true) {
+            // display help
+            println!("display help for ..");
+        }
+
+        if let Some(error) = ret.take_failure() {
+            Err(error)
+        } else {
+            Ok(Self {
+                files: value_0
+                    .ok_or_else(|| err!("Failed get value of field files"))
+                    .map(|v| v.0)?,
+            })
+        }
+    }
 }

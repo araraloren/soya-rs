@@ -1,68 +1,89 @@
-pub mod err;
-pub mod field;
 pub mod opt;
+pub mod value;
 
 pub use aopt;
-pub use aopt::Error;
-
-use crate::opt::Opt;
-
-use aopt::parser::DefaultSetChecker;
-use aopt::prelude::AppServices;
-use aopt::prelude::Args;
-use aopt::prelude::OptConfig;
-use aopt::prelude::PrefixOptValidator;
-use aopt::prelude::StrParser;
-
-pub use aopt::value::Infer;
-
-pub type Creator = aopt::prelude::Creator<Opt, OptConfig, Error>;
-pub type Set = aopt::prelude::OptSet<StrParser, Creator, PrefixOptValidator>;
-pub type Ser = AppServices;
-pub type Invoker<'a> = aopt::prelude::Invoker<'a, Set, Ser>;
-pub type FwdPolicy = aopt::prelude::FwdPolicy<Set, Ser, DefaultSetChecker<Set>>;
-pub type PrePolicy = aopt::prelude::PrePolicy<Set, Ser, DefaultSetChecker<Set>>;
-pub type DelayPolicy = aopt::prelude::DelayPolicy<Set, Ser, DefaultSetChecker<Set>>;
-pub type OptSet<'a> = aopt::prelude::HCOptSet<Set, Invoker<'a>, Ser>;
 
 pub mod prelude {
-    pub use crate::field::Field;
-    pub use crate::Creator;
-    pub use crate::DelayPolicy;
-    pub use crate::FwdPolicy;
-    pub use crate::Invoker;
-    pub use crate::OptSet;
-    pub use crate::PrePolicy;
-    pub use crate::Ser;
-    pub use crate::Set;
+    use crate::err::Error;
+    use crate::opt::Opt;
+    use aopt::parser::DefaultSetChecker;
+    use aopt::prelude::OptConfig;
+    use aopt::prelude::PrefixOptValidator;
+    use aopt::prelude::StrParser;
 
-    pub use aopt::args::Args;
-    pub use aopt::ctx::Ctx;
+    pub type Creator = aopt::prelude::Creator<Opt, OptConfig, Error>;
+    pub type Set = aopt::prelude::OptSet<StrParser, Creator, PrefixOptValidator>;
+    pub type Invoker<'inv> = aopt::prelude::Invoker<'inv, Set>;
+    pub type OptSet<'inv> = aopt::prelude::HCOptSet<'inv, Set>;
+
+    pub type FwdPolicy<'inv> =
+        aopt::prelude::FwdPolicy<OptSet<'inv>, DefaultSetChecker<OptSet<'inv>>>;
+    pub type PrePolicy<'inv> =
+        aopt::prelude::PrePolicy<OptSet<'inv>, DefaultSetChecker<OptSet<'inv>>>;
+    pub type DelayPolicy<'inv> =
+        aopt::prelude::DelayPolicy<OptSet<'inv>, DefaultSetChecker<OptSet<'inv>>>;
+    pub type SeqPolicy<'inv> =
+        aopt::prelude::SeqPolicy<OptSet<'inv>, DefaultSetChecker<OptSet<'inv>>>;
+
     pub use aopt::ctx::NullStore;
+    pub use aopt::prelude::Args;
+    pub use aopt::prelude::Ctx;
+    pub use aopt::prelude::Index;
+    pub use aopt::prelude::Infer;
     pub use aopt::prelude::Policy;
     pub use aopt::prelude::PolicyParser;
+    pub use aopt::prelude::Pos;
+    pub use aopt::prelude::SetCfg;
+    pub use aopt::set::ctor_default_name;
+
+    pub use crate::value::FieldVal;
+    pub use crate::ParserImpl;
 }
 
+pub mod err {
+    pub use aopt::raise_error as err;
+    pub use aopt::raise_failure as fail;
+    pub use aopt::Error;
+}
+
+use crate::err::Error;
+use aopt::{args::Args, parser::Policy, set::Set};
+
 pub trait ParserImpl<'inv> {
-    type Error: Into<crate::Error>;
+    type Error: Into<Error>;
+    type Parser<'a>: Set + Default
+    where
+        Self: 'a;
+    type Policy<'a>: Policy<Error = Self::Error> + Default
+    where
+        Self: 'a;
 
-    fn into_parser() -> Result<OptSet<'inv>, Self::Error> {
-        let mut optset = OptSet::default();
+    fn into_parser() -> Result<Self::Parser<'inv>, Self::Error> {
+        let mut parser = <Self::Parser<'inv>>::default();
 
-        Self::update(&mut optset)?;
-        Ok(optset)
+        Self::update(&mut parser)?;
+        Ok(parser)
     }
 
-    fn update(optset: &mut OptSet<'inv>) -> Result<(), Self::Error>;
+    fn update(parser: &mut Self::Parser<'inv>) -> Result<(), Self::Error>;
 
-    fn parse(optset: OptSet<'inv>) -> Result<Self, Self::Error>
+    fn into_policy() -> Result<Self::Policy<'inv>, Self::Error> {
+        let mut policy = <Self::Policy<'inv>>::default();
+
+        Self::apply_settings(&mut policy)?;
+        Ok(policy)
+    }
+
+    fn apply_settings(policy: &mut Self::Policy<'inv>) -> Result<(), Self::Error>;
+
+    fn parse(args: Args) -> Result<Self, Self::Error>
     where
-        Self: Sized,
+        Self: 'inv + Sized;
+
+    fn parse_env() -> Result<Self, Self::Error>
+    where
+        Self: 'inv + Sized,
     {
-        Self::parse_args(Args::from_env(), optset)
+        Self::parse(Args::from_env())
     }
-
-    fn parse_args(args: Args, optset: OptSet<'inv>) -> Result<Self, Self::Error>
-    where
-        Self: Sized;
 }
