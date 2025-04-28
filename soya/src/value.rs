@@ -161,6 +161,13 @@ where
 impl<T: FieldVal<Error = Error> + ErasedTy> FieldVal for Pos<T> {
     type Error = Error;
 
+    fn new() -> Option<Self>
+    where
+        Self: Sized,
+    {
+        T::new().map(|v| Pos::new(v))
+    }
+
     fn update(&mut self, val: InnerVal<Self>) -> Result<(), Self::Error> {
         FieldVal::update(&mut self.0, val)
     }

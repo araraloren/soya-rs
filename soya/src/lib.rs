@@ -27,6 +27,7 @@ pub mod prelude {
 
     pub use aopt::ctx::NullStore;
     pub use aopt::prelude::Args;
+    pub use aopt::prelude::Cmd;
     pub use aopt::prelude::Ctx;
     pub use aopt::prelude::Index;
     pub use aopt::prelude::Infer;
@@ -36,6 +37,8 @@ pub mod prelude {
     pub use aopt::prelude::SetCfg;
     pub use aopt::set::ctor_default_name;
 
+    pub use crate::fetch_or_update;
+    pub use crate::fetch_or_update_handler;
     pub use crate::value::FieldVal;
     pub use crate::ParserImpl;
 }
@@ -44,6 +47,37 @@ pub mod err {
     pub use aopt::raise_error as err;
     pub use aopt::raise_failure as fail;
     pub use aopt::Error;
+}
+
+pub mod _macro {
+    #[macro_export]
+    macro_rules! fetch_or_update {
+        ($ctx:ident, $id:ident, $type:ty) => {
+            let val = $ctx.value::<<$type as $crate::aopt::prelude::Infer>::Val>();
+
+            if let Some(value) = $id.as_mut() {
+                <$type as $crate::value::FieldVal>::update(value, val)?;
+            } else {
+                $id = Some(<$type as $crate::value::FieldVal>::map(val)?);
+            }
+        };
+    }
+
+    #[macro_export]
+    macro_rules! fetch_or_update_handler {
+        ($id:ident, $type:ty) => {
+            |set, ctx| {
+                let val = ctx.value::<<$type as $crate::aopt::prelude::Infer>::Val>();
+
+                if let Some(value) = $id.as_mut() {
+                    <$type as $crate::value::FieldVal>::update(value, val)?;
+                } else {
+                    $id = Some(<$type as $crate::value::FieldVal>::map(val)?);
+                }
+                Ok(Some(()))
+            }
+        };
+    }
 }
 
 use crate::err::Error;
