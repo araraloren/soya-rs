@@ -127,8 +127,8 @@ impl<'inv> ParserImpl<'inv> for Add {
     where
         Self: 'inv + Sized,
     {
-        let mut value_0 = <Pos<Vec<String>> as FieldVal>::new();
-        let mut value_help = <bool as FieldVal>::new();
+        let mut value_0 = <Pos<Vec<String>> as Infer>::infer_new();
+        let mut value_help = <bool as Infer>::infer_new();
         let mut parser = <Self as ParserImpl<'_>>::into_parser()?;
         let mut policy = <Self as ParserImpl<'_>>::into_policy()?;
 
@@ -246,10 +246,10 @@ impl<'inv> ParserImpl<'inv> for Clone {
     where
         Self: 'inv + Sized,
     {
-        let mut value_0 = <Option<u64> as FieldVal>::new();
-        let mut value_1 = <Pos<String> as FieldVal>::new();
-        let mut value_2 = <Pos<Option<String>> as FieldVal>::new();
-        let mut value_help = <bool as FieldVal>::new();
+        let mut value_0 = <Option<u64> as Infer>::infer_new();
+        let mut value_1 = <Pos<String> as Infer>::infer_new();
+        let mut value_2 = <Pos<Option<String>> as Infer>::infer_new();
+        let mut value_help = <bool as Infer>::infer_new();
         let mut parser = <Self as ParserImpl<'_>>::into_parser()?;
         let mut policy = <Self as ParserImpl<'_>>::into_policy()?;
 
@@ -388,11 +388,11 @@ impl<'inv> ParserImpl<'inv> for Git {
     where
         Self: 'inv + Sized,
     {
-        let mut value_0 = <bool as FieldVal>::new();
-        let mut value_1 = <Option<Vec<String>> as FieldVal>::new();
+        let mut value_0 = <bool as Infer>::infer_new();
+        let mut value_1 = <Option<Vec<String>> as Infer>::infer_new();
         let mut value_2 = None;
         let mut value_3 = None;
-        let mut value_help = <bool as FieldVal>::new();
+        let mut value_help = <bool as Infer>::infer_new();
         let mut parser = <Self as ParserImpl<'_>>::into_parser()?;
         let mut policy = <Self as ParserImpl<'_>>::into_policy()?;
 

@@ -1,5 +1,5 @@
+pub mod infer;
 pub mod opt;
-pub mod value;
 
 pub use aopt;
 
@@ -30,7 +30,6 @@ pub mod prelude {
     pub use aopt::prelude::Cmd;
     pub use aopt::prelude::Ctx;
     pub use aopt::prelude::Index;
-    pub use aopt::prelude::Infer;
     pub use aopt::prelude::Policy;
     pub use aopt::prelude::PolicyParser;
     pub use aopt::prelude::Pos;
@@ -39,7 +38,7 @@ pub mod prelude {
 
     pub use crate::fetch_or_update;
     pub use crate::fetch_or_update_handler;
-    pub use crate::value::FieldVal;
+    pub use crate::infer::Infer;
     pub use crate::ParserImpl;
 }
 
@@ -53,12 +52,12 @@ pub mod _macro {
     #[macro_export]
     macro_rules! fetch_or_update {
         ($ctx:ident, $id:ident, $type:ty) => {
-            let val = $ctx.value::<<$type as $crate::aopt::prelude::Infer>::Val>();
+            let val = $ctx.value::<<$type as $crate::infer::Infer>::Val>();
 
             if let Some(value) = $id.as_mut() {
-                <$type as $crate::value::FieldVal>::update(value, val)?;
+                <$type as $crate::infer::Infer>::infer_mut(value, val)?;
             } else {
-                $id = Some(<$type as $crate::value::FieldVal>::map(val)?);
+                $id = Some(<$type as $crate::infer::Infer>::infer_map(val)?);
             }
         };
     }
@@ -67,12 +66,12 @@ pub mod _macro {
     macro_rules! fetch_or_update_handler {
         ($id:ident, $type:ty) => {
             |set, ctx| {
-                let val = ctx.value::<<$type as $crate::aopt::prelude::Infer>::Val>();
+                let val = ctx.value::<<$type as $crate::infer::Infer>::Val>();
 
                 if let Some(value) = $id.as_mut() {
-                    <$type as $crate::value::FieldVal>::update(value, val)?;
+                    <$type as $crate::infer::Infer>::infer_mut(value, val)?;
                 } else {
-                    $id = Some(<$type as $crate::value::FieldVal>::map(val)?);
+                    $id = Some(<$type as $crate::infer::Infer>::infer_map(val)?);
                 }
                 Ok(Some(()))
             }
